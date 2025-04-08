@@ -204,7 +204,8 @@ story_generator/
 ├── stories/                # Generated stories folder
 └── README.md
 ```
-
+## 🎥 Demo
+Check out the video demonstration here: https://www.youtube.com/watch?v=OMTRN-h4msk
 
 ## Memory System
 
