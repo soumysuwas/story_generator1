@@ -134,6 +134,13 @@ class MemoryManager:
                     relationships=char.get("relationships", {}),
                     development=[{"episode": episode, "state": "Introduced"}]
                 )
+            char_text = f"{char['name']}: {', '.join(char.get('traits', []))}"
+            self.vector_store.add_items([{
+                "text": char_text,
+                "type": "character",
+                "id": char_id,
+                "episode": episode
+            }])
         
         # Update plot events
         for event in extracted.get("plot_events", []):
@@ -145,6 +152,12 @@ class MemoryManager:
                 description=event["description"],
                 characters_involved=event.get("characters_involved", [])
             ))
+            self.vector_store.add_items([{
+            "text": event["description"],
+            "type": "plot_event",
+            "id": event_id,
+            "episode": episode
+            }])
         
         # Update world building
         world = extracted.get("world_building", {})
@@ -154,40 +167,85 @@ class MemoryManager:
             self.memory.world_building.rules[rule_name] = rule_desc
         for obj_name, obj_details in world.get("objects", {}).items():
             self.memory.world_building.objects[obj_name] = obj_details
+        for loc_name, loc_details in world.get("locations", {}).items():
+            self.vector_store.add_items([{
+                "text": f"Location: {loc_name} - {loc_details}",
+                "type": "location",
+                "id": loc_name,
+                "episode": episode
+            }])
         
         # Update current episode
         self.memory.current_episode = episode
     
     def get_relevant_context(self, episode: int, max_tokens: int = 2000) -> str:
-        """Retrieve relevant context for generating the next episode"""
-        # TODO: Implement vector-based retrieval for more relevant context
-        # For now, implement a simpler approach
-        
+        """Retrieve relevant context for generating the next episode using vector search"""
         context = [f"Title: {self.memory.title}", f"Concept: {self.memory.concept}"]
-        
-        # Add character information
-        context.append("## Characters")
-        for char in self.memory.characters.values():
-            context.append(f"- {char.name}: {', '.join(char.traits)}")
-            if char.relationships:
-                rel_text = "; ".join([f"{rel_type} with {rel}" for rel, rel_type in char.relationships.items()])
-                context.append(f"  Relationships: {rel_text}")
-        
-        # Add recent plot events (last 3 episodes or less)
-        context.append("## Recent Events")
-        recent_events = [e for e in self.memory.plot_events if e.episode > episode - 3]
-        for event in recent_events[-5:]:  # Last 5 events only
-            context.append(f"- Episode {event.episode}: {event.description}")
-        
-        # Add world building info
-        if self.memory.world_building.locations or self.memory.world_building.rules:
-            context.append("## World Information")
-            for loc_name in list(self.memory.world_building.locations.keys())[:3]:
-                context.append(f"- Location: {loc_name}")
-            for rule_name, rule in list(self.memory.world_building.rules.items())[:3]:
-                context.append(f"- Rule: {rule_name}: {rule}")
-        
+
+        # Build query from recent plot and character developments
+        query_elements = []
+        for event in self.memory.plot_events[-3:]:  # Last 3 events
+            query_elements.append(event.description)
+
+        for char_id in self.memory.characters:
+            char = self.memory.characters[char_id]
+            if any(dev["episode"] >= episode - 2 for dev in char.development):
+                query_elements.append(f"{char.name}: {', '.join(char.traits)}")
+
+        query = " ".join(query_elements)
+
+        # Use vector store if available
+        if query and hasattr(self, "vector_store") and self.vector_store.vectors:
+            relevant_items = self.vector_store.search(query, top_k=10)
+
+            # Characters
+            context.append("## Characters")
+            for item in relevant_items:
+                if item["type"] == "character":
+                    char_id = item["id"]
+                    if char_id in self.memory.characters:
+                        char = self.memory.characters[char_id]
+                        context.append(f"- {char.name}: {', '.join(char.traits)}")
+                        if char.relationships:
+                            rel_text = "; ".join([f"{rel_type} with {rel}" for rel, rel_type in char.relationships.items()])
+                            context.append(f"  Relationships: {rel_text}")
+
+            # Plot Events
+            context.append("## Recent Events")
+            for item in relevant_items:
+                if item["type"] == "plot_event":
+                    context.append(f"- Episode {item['episode']}: {item['text']}")
+
+            # World Information
+            world_items = [item for item in relevant_items if item["type"] == "location"]
+            if world_items:
+                context.append("## World Information")
+                for item in world_items:
+                    context.append(f"- Location: {item['text']}")
+
+        else:
+            # === Fallback logic from your old method ===
+            context.append("## Characters")
+            for char in self.memory.characters.values():
+                context.append(f"- {char.name}: {', '.join(char.traits)}")
+                if char.relationships:
+                    rel_text = "; ".join([f"{rel_type} with {rel}" for rel, rel_type in char.relationships.items()])
+                    context.append(f"  Relationships: {rel_text}")
+
+            context.append("## Recent Events")
+            recent_events = [e for e in self.memory.plot_events if e.episode > episode - 3]
+            for event in recent_events[-5:]:
+                context.append(f"- Episode {event.episode}: {event.description}")
+
+            if self.memory.world_building.locations or self.memory.world_building.rules:
+                context.append("## World Information")
+                for loc_name in list(self.memory.world_building.locations.keys())[:3]:
+                    context.append(f"- Location: {loc_name}")
+                for rule_name, rule in list(self.memory.world_building.rules.items())[:3]:
+                    context.append(f"- Rule: {rule_name}: {rule}")
+
         return "\n".join(context)
+
     
     def save_memory(self, filepath: str) -> None:
         """Save memory to file"""

@@ -8,3 +8,4 @@ google-generativeai
 tiktoken
 streamlit==1.30.0
 protobuf==4.25.3
+accelerate
