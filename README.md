@@ -242,10 +242,6 @@ The memory system uses vector embeddings for efficient retrieval of the most rel
 - Character illustration generation
 
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ---
 
-Built with ❤️ for the KUKU FM Hackathon by the AI Story Generation Team
+Built with ❤️ for the KUKU FM Hackathon by Soumy Suwas from 3Murkhudu Team
