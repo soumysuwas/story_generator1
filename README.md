@@ -26,7 +26,7 @@ story_generator/
 │   ├── __init__.py
 │   └── consistency_checker.py # Verify story coherence
 ├── stories/
-│   ├── story1/
+│   ├── story1/#folder name can be different for diffeent stories based on the user prompt
 │   ├── story2/
 │   └── story3/
 └── README.md
