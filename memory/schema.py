@@ -18,9 +18,9 @@ class PlotEvent(BaseModel):
     consequences: List[str] = []
     
 class WorldBuilding(BaseModel):
-    locations: Dict[str, Dict[str, Any]] = {}
+    locations: Dict[str, str] = {}
     rules: Dict[str, str] = {}
-    objects: Dict[str, Dict[str, Any]] = {}
+    objects: Dict[str, str] = {}
     
 class StoryMemory(BaseModel):
     title: str
