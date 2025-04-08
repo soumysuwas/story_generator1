@@ -1,5 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
-
 # AI Story Generator - Dual LLM Architecture for Long-Form Storytelling
 
 AI Story Generator Banner
