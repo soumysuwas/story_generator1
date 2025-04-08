@@ -7,6 +7,7 @@ story_generator/
 ├── api/
 │   ├── __init__.py
 │   ├── openai_client.py    # OpenAI API wrapper
+│   ├── memory_llm.py    
 │   ├── perplexity_client.py # Perplexity API wrapper  
 │   └── gemini_client.py    # Gemini API wrapper (future)
 ├── memory/
@@ -20,7 +21,8 @@ story_generator/
 │   └── narrative_engine.py # Episode generation
 ├── utils/
 │   ├── __init__.py
-│   ├── prompts.py          # System prompts
+│   ├── prompts.py          # System prompts 
+│   ├── context_compressor.py
 │   └── token_counter.py    # Token usage tracking
 ├── evaluation/
 │   ├── __init__.py

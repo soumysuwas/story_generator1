@@ -4,10 +4,26 @@ from .schema import StoryMemory, Character, PlotEvent
 from api.openai_client import OpenAIClient
 from typing import Dict, List, Any
 from .vector_store import VectorStore
+from api.memory_llm import MemoryLLM
+from utils.context_compressor import ContextCompressor
+from utils.token_counter import TokenCounter
+
 
 class MemoryManager:
     def __init__(self, api_client):
-        self.api_client = api_client
+        self.api_client = api_client# Keep reference to generator API
+        self.token_counter = TokenCounter()
+        self.context_compressor = ContextCompressor(self.token_counter)
+        # Create a dedicated Memory LLM using the same API type
+        if hasattr(api_client, 'api_key'):
+            self.memory_llm = MemoryLLM(
+                api_type="openai" if "OpenAI" in api_client.__class__.__name__ else "perplexity",
+                api_key=api_client.api_key
+            )
+        else:
+            self.memory_llm = MemoryLLM(
+                api_type="openai" if "OpenAI" in api_client.__class__.__name__ else "perplexity"
+            )
         self.memory = None
         self.vector_store = VectorStore()  # Initialize vector store
         self.extraction_prompt = """
@@ -39,11 +55,20 @@ class MemoryManager:
 
     def extract_story_elements(self, story_text: str) -> Dict[str, Any]:
         """Extract story elements from generated text using LLM"""
-        response = self.api_client.generate_text(
+        response = self.memory_llm.generate_text(
             system_prompt=self.extraction_prompt,
             user_input=f"Extract story elements from this text:\n{story_text}"
         )
         
+        # Handle None or empty response
+        if not response:
+            print("Received empty response from API, using default structure")
+            return {
+                "characters": [],
+                "plot_events": [],
+                "world_building": {"locations": {}, "rules": {}, "objects": {}}
+            }
+    
         # Try multiple approaches to parse the JSON
         try:
             # First attempt: direct JSON parsing
@@ -179,7 +204,18 @@ class MemoryManager:
         self.memory.current_episode = episode
     
     def get_relevant_context(self, episode: int, max_tokens: int = 2000) -> str:
-        """Retrieve relevant context for generating the next episode using vector search"""
+        """Retrieve and compress relevant context for generating the next episode"""
+        # Get the full context using existing vector search or fallback method
+        full_context = self._get_full_context(episode)
+        
+        # Compress the context to fit within max_tokens
+        compressed_context = self.context_compressor.compress_context(full_context, max_tokens)
+        
+        return compressed_context
+
+    def _get_full_context(self, episode: int) -> str:
+        """Get the full context without compression - this is the original get_relevant_context logic.
+        Retrieve relevant context for generating the next episode using vector search"""
         context = [f"Title: {self.memory.title}", f"Concept: {self.memory.concept}"]
 
         # Build query from recent plot and character developments

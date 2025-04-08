@@ -28,6 +28,6 @@ class PerplexityClient:
             return response.json()["choices"][0]["message"]["content"]
         except Exception as e:
             print(f"Error calling Perplexity API: {e}")
-            return None
+            return ""  # Return empty string instead of None
 
 
