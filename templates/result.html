@@ -34,10 +34,18 @@
                         <h4>Generation Log:</h4>
                         <div class="log mb-4">
                             {% for line in progress %}
-                                <div>{{ line }}</div>
+                                {% if "inconsistencies" in line %}
+                                    <div class="text-warning">{{ line }}</div>
+                                {% elif "completed" in line %}
+                                    <div class="text-success">{{ line }}</div>
+                                {% elif "Generating" in line %}
+                                    <div class="text-primary">{{ line }}</div>
+                                {% else %}
+                                    <div>{{ line }}</div>
+                                {% endif %}
                             {% endfor %}
                         </div>
-                        
+
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('view_story', story_path=story_path) }}" class="btn btn-success">View Generated Story</a>
                             <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>

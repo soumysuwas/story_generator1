@@ -26,3 +26,33 @@
                     <div class="card-header bg-primary text-white">
                         <h2 class="text-center">Story Viewer</h2>
                     </div>
+                    <div class="card-body">
+                        <h3>Blueprint</h3>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <pre class="story-content">{{ blueprint }}</pre>
+                            </div>
+                        </div>
+                        
+                        <h3>Episodes</h3>
+                        {% for episode in episodes %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4>{{ episode.title }}</h4>
+                            </div>
+                            <div class="card-body">
+                                <pre class="story-content">{{ episode.content }}</pre>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                        </div>
+                    </div> <!-- end card-body -->
+                </div> <!-- end main card -->
+            </div> <!-- end col -->
+        </div> <!-- end row -->
+    </div> <!-- end container -->
+</body>
+</html>

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+import threading
 import os
 import sys
 from api.openai_client import OpenAIClient
@@ -180,6 +181,58 @@ def view_story(story_path):
             blueprint = f.read()
     
     return render_template('view_story.html', episodes=episodes, blueprint=blueprint, story_path=story_path)
+
+@app.route('/browse_stories')
+def browse_stories():
+    stories_dir = "stories"
+    if not os.path.exists(stories_dir):
+        return render_template('browse_stories.html', stories=[], error="No stories found.")
+        
+    stories = []
+    for story_name in os.listdir(stories_dir):
+        story_path = os.path.join(stories_dir, story_name)
+        if os.path.isdir(story_path):
+            # Count episodes
+            episode_count = len([f for f in os.listdir(story_path) if f.startswith("episode_") and f.endswith(".txt")])
+            
+            # Get title and concept if available
+            title = story_name
+            concept = ""
+            memory_path = os.path.join(story_path, "memory.json")
+            if os.path.exists(memory_path):
+                try:
+                    with open(memory_path, 'r') as f:
+                        memory_data = json.load(f)
+                        title = memory_data.get('title', story_name)
+                        concept = memory_data.get('concept', "")
+                except:
+                    pass
+                    
+            stories.append({
+                'path': story_path,
+                'name': story_name,
+                'title': title,
+                'concept': concept,
+                'episodes': episode_count
+            })
+            
+    return render_template('browse_stories.html', stories=stories)
+
+def shutdown_server():
+    """Shutdown the server after a brief delay"""
+    def shutdown_function():
+        # Give the server 1 second to send the response
+        import time
+        time.sleep(1)
+        os._exit(0)
+    
+    # Start shutdown in a separate thread
+    threading.Thread(target=shutdown_function).start()
+    return 'Server shutting down...'
+
+@app.route('/shutdown')
+def shutdown():
+    return shutdown_server()
 
 if __name__ == '__main__':
     app.run(debug=True)
