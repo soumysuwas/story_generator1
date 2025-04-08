@@ -1,10 +1,5 @@
 # AI Story Generator - Dual LLM Architecture for Long-Form Storytelling
 
-AI Story Generator Banner
-[Python
-[LLM
-[SentenceTransformers
-[Flask
 
 An innovative AI-driven storytelling pipeline that generates multi-episode stories with consistent characters, plots, and world-building elements, overcoming the traditional token and context limitations of large language models.
 
