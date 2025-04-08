@@ -4,6 +4,7 @@
 ```
 story_generator/
 ├── main.py                 # Entry point
+├── web_app.py 
 ├── api/
 │   ├── __init__.py
 │   ├── openai_client.py    # OpenAI API wrapper
@@ -27,6 +28,12 @@ story_generator/
 ├── evaluation/
 │   ├── __init__.py
 │   └── consistency_checker.py # Verify story coherence
+├── templates/
+│   ├── index.html
+│   ├── new_story.html
+│   ├── continue_story.html
+│   ├── result.html
+│   └── view_story.html
 ├── stories/
 │   ├── story1/#folder name can be different for diffeent stories based on the user prompt
 │   ├── story2/
