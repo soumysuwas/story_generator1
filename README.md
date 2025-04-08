@@ -205,7 +205,7 @@ story_generator/
 └── README.md
 ```
 ## 🎥 Demo
-Check out the video demonstration here: https://www.youtube.com/watch?v=OMTRN-h4msk
+Check out the video demonstration here: https://www.youtube.com/watch?v=XUtaXmTLC-w
 
 ## Memory System
 
