@@ -1,0 +1,10 @@
+openai
+pydantic
+requests
+numpy
+sentence-transformers
+python-dotenv
+google-generativeai
+tiktoken
+streamlit==1.30.0
+protobuf==4.25.3
