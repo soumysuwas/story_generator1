@@ -1,6 +1,7 @@
 
 
-''''
+##  Project Structure
+```
 story_generator/
 ├── main.py                 # Entry point
 ├── api/
@@ -29,4 +30,4 @@ story_generator/
 │   ├── story2/
 │   └── story3/
 └── README.md
-'''
+```
